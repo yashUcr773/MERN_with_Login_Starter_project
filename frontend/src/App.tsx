@@ -1,9 +1,14 @@
 import './App.css'
+import { Footer } from './pages/Footer'
+import { Header } from './pages/Header'
+import { Main } from './pages/Main'
 
 export default function App() {
     return (
-        <h1 className="text-3xl font-bold underline">
-            Hello world!
-        </h1>
+        <>
+            <Header></Header>
+            <Main></Main>
+            <Footer></Footer>
+        </>
     )
 }

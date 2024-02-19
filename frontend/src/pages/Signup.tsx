@@ -5,6 +5,7 @@ import { Correct } from "../assets/Correct";
 import { Incorrect } from "../assets/Incorrect";
 import { Loader } from "./Loader";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export function Signup() {
 
@@ -33,7 +34,7 @@ export function Signup() {
         setValidconfirmPWD(password == confirmPWD)
     }, [password, confirmPWD])
 
-    function handleSubmit(e: any) {
+    async function handleSubmit(e: any) {
         e.preventDefault()
         if (!CONSTANTS.USER_REGEX.test(user)) {
             setErr('Username does not match format')
@@ -47,11 +48,18 @@ export function Signup() {
             setErr('Passwords do not match')
             return setValidconfirmPWD(password == confirmPWD)
         }
-        console.log(user, password, confirmPWD)
         setShowLoader(true)
-        setTimeout(() => {
+        try {
+            await new Promise(r => setTimeout(r, 5000))
+            const response = await axios.post(CONSTANTS.APIBASEURL + '/auth/register', { user: user, pwd: password })
+            console.log(response)
+        } catch (e: any) {
+            setErr(e.response.data.message)
+            console.log(e)
+        }
+        finally {
             setShowLoader(false)
-        }, 5000)
+        }
     }
 
     return <section className="flex flex-col items-center justify-center h-full w-11/12 text-md font-normal">
@@ -132,7 +140,7 @@ export function Signup() {
                             Must match the first password input field.
                         </p>
                     </div>
-                    <p className="text-red-600 test-lg font-semibold mt-4">{err}</p>
+                    <p className={`${err ? "bg-red-400" : ""} rounded-lg text-white test-lg font-semibold mt-4 p-2 w-full text-center`}>{err}</p>
                     <button className="border border-black p-4 rounded-xl bg-black text-white w-48 mt-4 flex flex-row items-center justify-center gap-4">Sign up {showLoader ? <Loader fullPage={false} /> : ""}</button>
                 </form>
 

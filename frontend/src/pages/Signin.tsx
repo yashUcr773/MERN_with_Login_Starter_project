@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
 import { Loader } from "./Loader"
 import { useNavigate } from "react-router-dom"
+import axios from 'axios'
+import { CONSTANTS } from "../../config/Constants";
 
 export function Signin() {
 
@@ -14,13 +16,19 @@ export function Signin() {
         setErr("")
     }, [user, password])
 
-    function handleSubmit(e: any) {
+    async function handleSubmit(e: any) {
         e.preventDefault()
-        console.log(user, password)
         setShowLoader(true)
-        setTimeout(() => {
+        try {
+            const response = await axios.post(CONSTANTS.APIBASEURL + '/auth/login', { user: user, pwd: password })
+            console.log(response)
+        } catch (e: any) {
+            setErr(e.response.data.message)
+            console.log(e)
+        }
+        finally {
             setShowLoader(false)
-        }, 5000)
+        }
     }
 
     return <section className="flex flex-col items-center justify-center h-full w-11/12 text-md font-normal">
@@ -65,7 +73,7 @@ export function Signin() {
                         ></input>
                     </div>
 
-                    <p className="text-red-600 test-lg font-semibold mt-4">{err}</p>
+                    <p className={`${err ? "bg-red-400" : ""} rounded-lg text-white test-lg font-semibold mt-4 p-2 w-full text-center`}>{err}</p>
                     <button className="border border-black p-4 rounded-xl bg-black text-white w-48 mt-4 flex flex-row items-center justify-center gap-4">Sign in {showLoader ? <Loader fullPage={false} /> : ""}</button>
                 </form>
 

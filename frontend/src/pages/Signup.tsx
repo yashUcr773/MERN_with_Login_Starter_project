@@ -3,6 +3,7 @@ import { Info } from "../assets/Info";
 import { CONSTANTS } from "../../config/Constants"
 import { Correct } from "../assets/Correct";
 import { Incorrect } from "../assets/Incorrect";
+import { Loader } from "./Loader";
 
 export function Signup() {
 
@@ -15,7 +16,8 @@ export function Signup() {
     const [confirmPWD, setConfirmPWD] = useState("")
     const [validconfirmPWD, setValidconfirmPWD] = useState(false)
 
-    const [err, setErr] = useState("Invalid")
+    const [err, setErr] = useState("")
+    const [showLoader, setShowLoader] = useState(false)
 
     useEffect(() => {
         setErr("")
@@ -42,12 +44,17 @@ export function Signup() {
             setErr('Passwords do not match')
             return setValidconfirmPWD(password == confirmPWD)
         }
+        console.log(user, password, confirmPWD)
+        setShowLoader(true)
+        setTimeout(() => {
+            setShowLoader(false)
+        }, 5000)
     }
 
     return <section className="flex flex-col items-center justify-center h-full w-11/12 text-md font-normal">
         <div className="signup-form flex flex-col gap-2 p-8 rounded-lg items-center justify-center w-full sm:w-[500px] border border-black">
             <div className="form-header">
-                <h1 className="text-3xl font-bold">Register</h1>
+                <h1 className="text-3xl font-bold">Sign up</h1>
             </div>
             <div className="form-body w-full">
                 <form onSubmit={handleSubmit} className="flex flex-col items-center">
@@ -67,7 +74,7 @@ export function Signup() {
                             required
                             aria-invalid={validName ? "false" : "true"}
                             aria-describedby="uidnote"
-                            placeholder="Enter Name"
+                            placeholder="Enter username"
                         ></input>
                         <p id="uidnote" className={`${user && !validName ? 'block' : 'hidden'} border border-black my-2 bg-gray-800 text-sm font-normal p-4 rounded-lg text-white`}>
                             <Info />
@@ -91,7 +98,7 @@ export function Signup() {
                             required
                             aria-invalid={validPassword ? "false" : "true"}
                             aria-describedby="pwdnote"
-                            placeholder="Enter Password"
+                            placeholder="Enter password"
                         ></input>
                         <p id="pwdnote" className={`${password && !validPassword ? 'block' : 'hidden'} border border-black my-2 bg-gray-800 text-sm font-normal p-4 rounded-lg text-white`}>
                             <Info />
@@ -115,7 +122,7 @@ export function Signup() {
                             required
                             aria-invalid={validconfirmPWD ? "false" : "true"}
                             aria-describedby="confirmpwdnote"
-                            placeholder="Enter Password Again"
+                            placeholder="Enter password again"
                         ></input>
                         <p id="confirmpwdnote" className={`${confirmPWD && !validconfirmPWD ? 'block' : 'hidden'} border border-black my-2 bg-gray-800 text-sm font-normal p-4 rounded-lg text-white`}>
                             <Info />
@@ -123,7 +130,7 @@ export function Signup() {
                         </p>
                     </div>
                     <p className="text-red-600 test-lg font-semibold mt-4">{err}</p>
-                    <button className="border border-black p-4 rounded-xl bg-black text-white w-48 mt-4">Submit</button>
+                    <button className="border border-black p-4 rounded-xl bg-black text-white w-48 mt-4 flex flex-row items-center justify-center gap-4">Sign up {showLoader ? <Loader fullPage={false} /> : ""}</button>
                 </form>
 
             </div>

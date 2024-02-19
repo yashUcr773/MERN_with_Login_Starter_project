@@ -16,9 +16,16 @@ const handleLogin = async (req, res) => {
     if (!user || !pwd)
         return res
             .status(400)
-            .json({ message: "Username and password are required." });
+            .json({
+                message: "Username and password are required.",
+                success: false,
+            });
     const foundUser = usersDB.users.find((person) => person.username === user);
-    if (!foundUser) return res.sendStatus(401); //Unauthorized
+    if (!foundUser)
+        return res.status(401).json({
+            success: false,
+            message: "Username or password incorrect",
+        });
     // evaluate password
     const match = await bcrypt.compare(pwd, foundUser.password);
     if (match) {
@@ -45,16 +52,22 @@ const handleLogin = async (req, res) => {
         );
 
         res.cookie("jwt", refreshToken, tokenCookieOptions);
-        res.json({ accessToken });
+        res.json({ success: true, message: "Login Successful", accessToken });
     } else {
-        res.sendStatus(401);
+        res.status(401).json({
+            success: false,
+            message: "Username or password incorrect",
+        });
     }
 };
 
 const handleLogout = async (req, res) => {
     try {
         const cookies = req.cookies;
-        if (!cookies?.jwt) return res.sendStatus(204);
+        if (!cookies?.jwt)
+            return res
+                .status(204)
+                .json({ success: true, message: "Log out successful" });
         const refreshToken = cookies["jwt"];
 
         const foundUser = usersDB.users.find(
@@ -62,7 +75,9 @@ const handleLogout = async (req, res) => {
         );
         if (!foundUser) {
             res.clearCookie("jwt", tokenCookieOptions);
-            return res.sendStatus(204);
+            return res
+                .status(204)
+                .json({ success: true, message: "Log out successful" });
         }
 
         const otherUsers = usersDB.users.filter(
@@ -78,10 +93,14 @@ const handleLogout = async (req, res) => {
 
         res.clearCookie("jwt", tokenCookieOptions);
 
-        res.sendStatus(204);
+        return res
+            .status(204)
+            .json({ success: true, message: "Log out successful" });
     } catch (e) {
         console.log(e);
-        return res.sendStatus(403);
+        return res
+            .status(403)
+            .json({ success: false, message: "Authorization Error" });
     }
 };
 
@@ -93,7 +112,10 @@ const handleSignup = async (req, res) => {
             .json({ message: "Username and password are required." });
     // check for duplicate usernames in the db
     const duplicate = usersDB.users.find((person) => person.username === user);
-    if (duplicate) return res.sendStatus(409); //Conflict
+    if (duplicate)
+        return res
+            .status(409)
+            .json({ success: false, message: "Username exists" }); //Conflict
     try {
         //encrypt the password
         const hashedPwd = await bcrypt.hash(pwd, 10);
@@ -104,9 +126,12 @@ const handleSignup = async (req, res) => {
             path.join(__dirname, "..", "model", "users.json"),
             JSON.stringify(usersDB.users)
         );
-        res.status(201).json({ success: `New user ${user} created!` });
+        res.status(201).json({
+            success: true,
+            message: `New user ${user} created!`,
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 
@@ -114,14 +139,20 @@ const handleRefreshToken = async (req, res) => {
     try {
         const cookies = req.cookies;
 
-        if (!cookies?.jwt) return res.sendStatus(401);
+        if (!cookies?.jwt)
+            return res
+                .status(401)
+                .json({ success: false, message: "Authorization Error" });
 
         const refreshToken = cookies["jwt"];
 
         const foundUser = usersDB.users.find(
             (person) => person.refreshToken === refreshToken
         );
-        if (!foundUser) return res.sendStatus(403);
+        if (!foundUser)
+            return res
+                .status(403)
+                .json({ success: false, message: "Authorization Error" });
 
         const { username } = await jwt.verify(
             refreshToken,
@@ -134,9 +165,13 @@ const handleRefreshToken = async (req, res) => {
             { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
         );
 
-        res.json({ accessToken });
+        return res
+            .status(200)
+            .json({ success: true, message: "Token Refreshed", accessToken });
     } catch (e) {
-        return res.sendStatus(403);
+        return res
+            .status(403)
+            .json({ success: false, message: "Authorization Error" });
     }
 };
 

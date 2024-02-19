@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react"
 import { Loader } from "./Loader"
+import { useNavigate } from "react-router-dom"
 
 export function Signin() {
 
+    const navigate = useNavigate();
     const [user, setUser] = useState("")
     const [password, setPassword] = useState("")
     const [err, setErr] = useState("")
@@ -70,7 +72,7 @@ export function Signin() {
             </div>
             <div className="form-footer mt-2">
                 <span>Already registered?
-                    <span className="underline cursor-pointer font-semibold">
+                    <span onClick={() => { navigate('/signup') }} className="underline cursor-pointer font-semibold">
                         Sign up
                     </span>
                 </span>

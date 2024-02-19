@@ -4,6 +4,7 @@ import { CONSTANTS } from "../../config/Constants"
 import { Correct } from "../assets/Correct";
 import { Incorrect } from "../assets/Incorrect";
 import { Loader } from "./Loader";
+import { useNavigate } from "react-router-dom";
 
 export function Signup() {
 
@@ -18,6 +19,8 @@ export function Signup() {
 
     const [err, setErr] = useState("")
     const [showLoader, setShowLoader] = useState(false)
+
+    const navigate = useNavigate()
 
     useEffect(() => {
         setErr("")
@@ -135,7 +138,7 @@ export function Signup() {
 
             </div>
             <div className="form-footer mt-2">
-                <span>Already registered? <span className="underline cursor-pointer font-semibold">Sign in</span></span>
+                <span>Already registered? <span onClick={() => {navigate('/signin')}} className="underline cursor-pointer font-semibold">Sign in</span></span>
             </div>
         </div>
     </section>

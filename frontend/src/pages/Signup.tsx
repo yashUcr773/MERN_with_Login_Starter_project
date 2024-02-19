@@ -6,16 +6,19 @@ import { Incorrect } from "../assets/Incorrect";
 import { Loader } from "./Loader";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useSetRecoilState } from "recoil";
+import { accessTokenAtom, isLoggedInAtom } from "../store/atom/authAtom";
+import { userAtom } from "../store/atom/user";
 
 export function Signup() {
 
-    const [user, setUser] = useState("")
+    const [username, setUsername] = useState("Yash")
     const [validName, setValidName] = useState(false)
 
-    const [password, setPassword] = useState("")
+    const [password, setPassword] = useState("aA1!1111")
     const [validPassword, setValidPassword] = useState(false)
 
-    const [confirmPWD, setConfirmPWD] = useState("")
+    const [confirmPWD, setConfirmPWD] = useState("aA1!1111")
     const [validconfirmPWD, setValidconfirmPWD] = useState(false)
 
     const [err, setErr] = useState("")
@@ -23,10 +26,14 @@ export function Signup() {
 
     const navigate = useNavigate()
 
+    const setIsLoggedIn = useSetRecoilState(isLoggedInAtom)
+    const setAccessToken = useSetRecoilState(accessTokenAtom)
+    const setUser = useSetRecoilState(userAtom)
+
     useEffect(() => {
         setErr("")
-        setValidName(CONSTANTS.USER_REGEX.test(user));
-    }, [user])
+        setValidName(CONSTANTS.USER_REGEX.test(username));
+    }, [username])
 
     useEffect(() => {
         setErr("")
@@ -36,9 +43,9 @@ export function Signup() {
 
     async function handleSubmit(e: any) {
         e.preventDefault()
-        if (!CONSTANTS.USER_REGEX.test(user)) {
+        if (!CONSTANTS.USER_REGEX.test(username)) {
             setErr('Username does not match format')
-            return setValidName(CONSTANTS.USER_REGEX.test(user));
+            return setValidName(CONSTANTS.USER_REGEX.test(username));
         }
         if (!CONSTANTS.PWD_REGEX.test(password)) {
             setErr('Password does not match format')
@@ -50,10 +57,16 @@ export function Signup() {
         }
         setShowLoader(true)
         try {
-            await new Promise(r => setTimeout(r, 5000))
-            const response = await axios.post(CONSTANTS.APIBASEURL + '/auth/register', { user: user, pwd: password })
+            const response = await axios.post(CONSTANTS.APIBASEURL + '/auth/register', { user: username, pwd: password })
             console.log(response)
+            setIsLoggedIn(true)
+            // setAccessToken(resp)
+            // setUser(null)
         } catch (e: any) {
+            setIsLoggedIn(false)
+            setAccessToken(null)
+            setUser(null)
+
             setErr(e.response.data.message)
             console.log(e)
         }
@@ -73,21 +86,21 @@ export function Signup() {
 
                         <label htmlFor="username" className="flex flex-row gap-2 items-center justify-start h-full my-2 font-semibold">
                             Username:
-                            {!user ? "" : !validName ? <Incorrect color={'red'} /> : <Correct color={'green'} />}
+                            {!username ? "" : !validName ? <Incorrect color={'red'} /> : <Correct color={'green'} />}
                         </label>
                         <input
                             className="p-4 bg-gray-100 font-normal rounded-md w-full"
                             type="text"
                             id="username"
                             autoComplete="off"
-                            onChange={(e) => setUser(e.target.value)}
-                            value={user}
+                            onChange={(e) => setUsername(e.target.value)}
+                            value={username}
                             required
                             aria-invalid={validName ? "false" : "true"}
                             aria-describedby="uidnote"
                             placeholder="Enter username"
                         ></input>
-                        <p id="uidnote" className={`${user && !validName ? 'block' : 'hidden'} border border-black my-2 bg-gray-800 text-sm font-normal p-4 rounded-lg text-white`}>
+                        <p id="uidnote" className={`${username && !validName ? 'block' : 'hidden'} border border-black my-2 bg-gray-800 text-sm font-normal p-4 rounded-lg text-white`}>
                             <Info />
                             4 to 24 characters.
                             Must begin with a letter.
@@ -146,7 +159,7 @@ export function Signup() {
 
             </div>
             <div className="form-footer mt-2">
-                <span>Already registered? <span onClick={() => {navigate('/signin')}} className="underline cursor-pointer font-semibold">Sign in</span></span>
+                <span>Already registered? <span onClick={() => { navigate('/signin') }} className="underline cursor-pointer font-semibold">Sign in</span></span>
             </div>
         </div>
     </section>

@@ -1,6 +1,29 @@
 const express = require("express");
 const app = express();
-const port = 3000;
+const cors = require("cors");
+const corsOptions = require("./config/corsOptions");
+const PORT = 3000;
+const cookieParser = require("cookie-parser");
 
-app.get("/", (req, res) => res.send("Hello World!"));
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+// Cross Origin Resource Sharing
+app.use(cors(corsOptions));
+
+// built-in middleware to handle urlencoded form data
+app.use(express.urlencoded({ extended: false }));
+
+// built-in middleware for json
+app.use(express.json());
+
+// to parse cookies sent with request
+app.use(cookieParser());
+
+// routes
+app.use("/auth", require("./routes/auth"));
+app.use("/employees", require("./routes/api/employees"));
+
+// global router catcher
+app.all("*", (req, res) => {
+    res.send("Hello!");
+});
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

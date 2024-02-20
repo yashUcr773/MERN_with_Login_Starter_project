@@ -1,0 +1,36 @@
+const zod = require("zod");
+
+const passwordSchema = z
+    .string()
+    .min(8)
+    .max(24)
+    .refine(
+        (value) => {
+            const hasLowerCase = /[a-z]/.test(value);
+            const hasUpperCase = /[A-Z]/.test(value);
+            const hasNumber = /[0-9]/.test(value);
+            const hasSpecialChar = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(
+                value
+            );
+            return hasLowerCase && hasUpperCase && hasNumber && hasSpecialChar;
+        },
+        {
+            message:
+                "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character",
+        }
+    );
+
+const USER_SIGNUP_VALIDATOR = zod.object({
+    username: zod.string().min(4).max(24),
+    password: passwordSchema,
+});
+
+const USER_SIGNIN_VALIDATOR = zod.object({
+    username: zod.string(),
+    password: zod.string(),
+});
+
+module.exports = {
+    USER_SIGNUP_VALIDATOR,
+    USER_SIGNIN_VALIDATOR,
+};

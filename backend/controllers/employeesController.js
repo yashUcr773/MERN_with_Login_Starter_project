@@ -1,5 +1,14 @@
 const EmployeesDB = require("../database/employee.database");
+const {
+    EMPLOYEE_CREATE_VALIDATOR,
+    EMPLOYEE_UPDATE_VALIDATOR,
+} = require("../validations/employee.validations");
 
+/**
+ * Get all employees
+ * Need valid JWT to access this route
+ * Accessible by all roles
+ */
 const getAllEmployees = async (req, res) => {
     try {
         let employees = await EmployeesDB.find(
@@ -16,14 +25,24 @@ const getAllEmployees = async (req, res) => {
     }
 };
 
+/**
+ * Create a new Employee
+ * Need valid JWT to access this route
+ * Accessible by Admin and Editor
+ */
 const createNewEmployee = async (req, res) => {
     try {
         const { firstname, lastname } = req.body;
+        const { success, error } = EMPLOYEE_CREATE_VALIDATOR.safeParse({
+            firstname,
+            lastname,
+        });
 
-        if (!firstname || !lastname) {
+        if (!success) {
             return res.status(400).json({
+                message: "Firstname and Lastname are required.",
                 success: false,
-                message: "First and last names are required.",
+                error: error.issues,
             });
         }
 
@@ -46,10 +65,28 @@ const createNewEmployee = async (req, res) => {
     }
 };
 
+/**
+ * Update Employee information by Id
+ * Need valid JWT to access this route
+ * Accessible by Admin and Editor
+ */
 const updateEmployee = async (req, res) => {
     try {
         const { id, firstname, lastname } = req.body;
         const employee = await EmployeesDB.findOne({ _id: id });
+
+        const { success, error } = EMPLOYEE_UPDATE_VALIDATOR.safeParse({
+            firstname,
+            lastname,
+        });
+
+        if (!success) {
+            return res.status(400).json({
+                message: "Firstname or Lastname are required.",
+                success: false,
+                error: error.issues,
+            });
+        }
 
         if (!employee) {
             return res.status(400).json({
@@ -82,6 +119,11 @@ const updateEmployee = async (req, res) => {
     }
 };
 
+/**
+ * Delete Employee by Id
+ * Need valid JWT to access this route
+ * Accessible by Admin
+ */
 const deleteEmployee = async (req, res) => {
     try {
         const { id } = req.body;
@@ -109,6 +151,11 @@ const deleteEmployee = async (req, res) => {
     }
 };
 
+/**
+ * Get employee by Id
+ * Need valid JWT to access this route
+ * Accessible by All Roles
+ */
 const getEmployee = async (req, res) => {
     try {
         const { id } = req.body;

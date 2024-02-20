@@ -3,28 +3,51 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { tokenCookieOptions } = require("../config/cookieOptions");
+const {
+    USER_SIGNUP_VALIDATOR,
+    USER_SIGNIN_VALIDATOR,
+} = require("../validations/user.validations");
 
+/**
+Takes in username and password from request.
+Checks if user and password exists in database.
+Sets refresh token in DB and cookie
+Returns found user object and accesstoken
+*/
 const handleLogin = async (req, res) => {
-    // check if inputs are valid
-    const { user, pwd } = req.body;
-    if (!user || !pwd)
-        return res.status(400).json({
-            message: "Username and password are required.",
-            success: false,
+    try {
+        // check if inputs are valid
+        const { username, password } = req.body;
+        const { success, error } = USER_SIGNIN_VALIDATOR.safeParse({
+            username,
+            password,
         });
 
-    // check if user exists in db
-    const foundUser = await UsersDB.findOne({ username: user });
-    if (!foundUser)
-        return res.status(401).json({
-            success: false,
-            message: "Username or password incorrect",
-        });
+        if (!success) {
+            return res.status(400).json({
+                message: "Username and password are required.",
+                success: false,
+                error: error.issues,
+            });
+        }
 
-    // evaluate password
-    const match = await bcrypt.compare(pwd, foundUser.password);
+        // check if user exists in db
+        const foundUser = await UsersDB.findOne({ username });
+        if (!foundUser) {
+            return res.status(401).json({
+                success: false,
+                message: "Username or password incorrect",
+            });
+        }
 
-    if (match) {
+        // evaluate password
+        const match = await bcrypt.compare(password, foundUser.password);
+        if (!match) {
+            res.status(401).json({
+                success: false,
+                message: "Username or password incorrect",
+            });
+        }
         const [accessToken, refreshToken] = _generateTokens(
             foundUser._id,
             foundUser.username,
@@ -48,14 +71,19 @@ const handleLogin = async (req, res) => {
                 roles: updatedUser.roles,
             },
         });
-    } else {
-        res.status(401).json({
-            success: false,
-            message: "Username or password incorrect",
-        });
+    } catch (e) {
+        console.log(e);
+        return res
+            .status(500)
+            .json({ success: false, message: "Server Error" });
     }
 };
 
+/**
+Gets refresh token from cookie, if not found, return
+Delete refresh token in DB and cookie
+Returns
+*/
 const handleLogout = async (req, res) => {
     try {
         // get inputs
@@ -107,31 +135,45 @@ const handleLogout = async (req, res) => {
     }
 };
 
+/**
+Takes in username and password from request.
+Checks if user and password exists in database.
+Sets user, refresh token in DB and cookie.
+Returns created user object and accesstoken.
+TODO: Update to make only 1 db call to create user and set refresh token
+*/
 const handleSignup = async (req, res) => {
-    // check if data is recieved
-    const { user, pwd } = req.body;
-    if (!user || !pwd) {
-        return res
-            .status(400)
-            .json({ message: "Username and password are required." });
-    }
-
-    // check for duplicate usernames in the db
-    const duplicate = await UsersDB.findOne({ username: user });
-    if (duplicate) {
-        return res
-            .status(409)
-            .json({ success: false, message: "Username exists" }); //Conflict
-    }
-
     try {
+        // check if inputs are valid
+        const { username, password } = req.body;
+        const { success, error } = USER_SIGNUP_VALIDATOR.safeParse({
+            username,
+            password,
+        });
+
+        if (!success) {
+            return res.status(400).json({
+                message: "Username and password are required.",
+                success: false,
+                error: error.issues,
+            });
+        }
+
+        // check for duplicate usernames in the db
+        const duplicate = await UsersDB.findOne({ username: username });
+        if (duplicate) {
+            return res
+                .status(409)
+                .json({ success: false, message: "Username exists" }); //Conflict
+        }
+
         //encrypt the password
-        const hashedPwd = await bcrypt.hash(pwd, 10);
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         //store the new user
         const newUser = await UsersDB.create({
-            username: user,
-            password: hashedPwd,
+            username: username,
+            password: hashedPassword,
             refreshToken: "",
         });
 
@@ -164,6 +206,12 @@ const handleSignup = async (req, res) => {
     }
 };
 
+/**
+Gets refresh token from cookie, if not found, return
+find user with said refresh token from DB
+Delete refresh token in DB and cookie
+Returns
+*/
 const handleRefreshToken = async (req, res) => {
     try {
         // get input
@@ -192,14 +240,11 @@ const handleRefreshToken = async (req, res) => {
         }
 
         // verify if token is correct
-        const { username } = await jwt.verify(
-            refreshToken,
-            process.env.REFRESH_TOKEN_SECRET
-        );
+        await jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
         // generate new tokens
         const [newAccessToken, newRefreshToken] = _generateTokens(
-            foundUser.username._id,
+            foundUser._id,
             foundUser.username,
             foundUser.roles
         );
@@ -217,6 +262,11 @@ const handleRefreshToken = async (req, res) => {
     }
 };
 
+/**
+Takes in userId and username and userRoles.
+Generate accessToken and refreshToken
+return [accessToken, refreshToken]
+*/
 function _generateTokens(userId, username, userRoles) {
     const accessToken = jwt.sign(
         {

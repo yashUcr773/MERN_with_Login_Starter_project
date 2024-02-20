@@ -9,7 +9,7 @@ const verifyJWT = async (req, res, next) => {
         if (!authHeader?.startsWith("Bearer ")) {
             return res.status(401).json({
                 success: false,
-                message: "Authorization Error",
+                message: "Authentication Error",
             });
         }
 
@@ -27,7 +27,7 @@ const verifyJWT = async (req, res, next) => {
         console.log(e);
         return res.status(403).json({
             success: false,
-            message: "Authorization Error",
+            message: "Authentication Error",
         });
     }
 };

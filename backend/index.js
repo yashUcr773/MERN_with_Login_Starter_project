@@ -25,6 +25,7 @@ app.use(cookieParser());
 // routes
 app.use("/auth", require("./routes/auth"));
 app.use("/employees", require("./routes/api/employees"));
+app.use("/users", require("./routes/users"));
 
 // global router catcher
 app.all("*", (req, res) => {

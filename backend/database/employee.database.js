@@ -11,6 +11,15 @@ const employeeSchema = new Schema(
             type: String,
             required: true,
         },
+        lastUpdatedBy: {
+            type: String,
+            required: true,
+        },
+        createdBy: {
+            type: String,
+            required: true,
+            immutable: true,
+        },
     },
     { timestamps: true }
 );

@@ -11,10 +11,7 @@ const {
  */
 const getAllEmployees = async (req, res) => {
     try {
-        let employees = await EmployeesDB.find(
-            {},
-            { firstname: 1, lastname: 1, _id: 1 }
-        );
+        let employees = await EmployeesDB.find({});
         res.status(200).json({
             success: true,
             employees,
@@ -49,16 +46,14 @@ const createNewEmployee = async (req, res) => {
         const newEmployee = await EmployeesDB.create({
             firstname,
             lastname,
+            lastUpdatedBy: req.userInfo.userId,
+            createdBy: req.userInfo.userId,
         });
 
         res.status(201).json({
             success: true,
             message: "Employee Added",
-            employee: {
-                firstname: newEmployee.firstname,
-                lastname: newEmployee.lastname,
-                employeeId: newEmployee._id,
-            },
+            employee: newEmployee,
         });
     } catch (e) {
         return res.status(500).json({ success: false, message: e.message });
@@ -102,23 +97,17 @@ const updateEmployee = async (req, res) => {
         if (lastname) {
             newEmployee.lastname = lastname;
         }
+        newEmployee.lastUpdatedBy = req.userInfo.userId;
         const updatedEmployee = await EmployeesDB.findByIdAndUpdate(
             id,
             { ...newEmployee },
             { new: true }
         );
 
-        console.log(updatedEmployee);
-        console.log(newEmployee);
-
         return res.status(200).json({
             success: true,
             message: "employee updated",
-            employee: {
-                firstname: updatedEmployee.firstname,
-                lastname: updatedEmployee.lastname,
-                employeeId: updatedEmployee._id,
-            },
+            employee: updatedEmployee,
         });
     } catch (e) {
         return res.status(500).json({ success: false, message: e.message });
@@ -146,11 +135,7 @@ const deleteEmployee = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "employee deleted",
-            employee: {
-                firstname: deletedEmployee.firstname,
-                lastname: deletedEmployee.lastname,
-                employeeId: deletedEmployee._id,
-            },
+            employee: deletedEmployee,
         });
     } catch (e) {
         return res.status(500).json({ success: false, message: e.message });
@@ -175,11 +160,7 @@ const getEmployee = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "employee found",
-            employee: {
-                firstname: employee.firstname,
-                lastname: employee.lastname,
-                employeeId: employee._id,
-            },
+            employee,
         });
     } catch (e) {
         console.log(e);

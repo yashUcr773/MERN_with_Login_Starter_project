@@ -11,8 +11,12 @@
 - Express
 
 # Todos
-- Move DB from infile to Cloud
 - Add logger and global error catcher
+- Add user functionalities
+    - update user
+    - add role / remove role
+    - send data based on role on get user [admin sees all, editor sees roles, user sees name and id.]
+    - Update to make only 1 db call to create user and set refresh token
 
 # Env Vars
 - ACCESS_TOKEN_SECRET

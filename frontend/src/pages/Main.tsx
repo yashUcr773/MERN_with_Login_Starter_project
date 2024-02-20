@@ -1,13 +1,36 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Signin } from "./Signin";
 import { Signup } from "./Signup";
+import { Layout } from "./Layout";
+import { LinkPage } from "./LinkPage";
+import { Unauthorized } from "./Unauthorized";
+import { Home } from "./Home";
+import { Editor } from "./Editor";
+import { Admin } from "./Admin";
+import { Lounge } from "./Lounge";
+import { Missing } from "./Missing";
 
 export function Main() {
-    return <main className="bg-gray-300 border border-black h-[100vh] flex flex-row items-center justify-center">
+    return (
         <Routes>
-            <Route path="/signup" element={<Signup />}></Route>
-            <Route path="/signin" element={<Signin />}></Route>
-            <Route path='*' element={<Navigate to="/signin" replace />}></Route>
+            <Route path="/" element={<Layout />}>
+
+                {/* public routes */}
+                <Route path='signin' element={<Signin />}></Route>
+                <Route path='signup' element={<Signup />}></Route>
+                <Route path='linkpage' element={<LinkPage />}></Route>
+                <Route path='unauthorized' element={<Unauthorized />}></Route>
+
+                {/* Protected */}
+                <Route path='/' element={<Home />}></Route>
+                <Route path='editor' element={<Editor />}></Route>
+                <Route path='admin' element={<Admin />}></Route>
+                <Route path='lounge' element={<Lounge />}></Route>
+
+                {/* Catch All */}
+                <Route path='*' element={<Missing />}></Route>
+
+            </Route>
         </Routes>
-    </main>
+    )
 }

@@ -32,6 +32,7 @@ export function Signin() {
             setIsLoggedIn(true)
             setAccessToken(accessToken)
             setUser(user)
+            navigate('/dashboard')
 
         } catch (e: any) {
             setIsLoggedIn(false)

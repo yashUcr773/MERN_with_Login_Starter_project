@@ -1,0 +1,13 @@
+import { Link } from "react-router-dom";
+
+export function Lounge() {
+    return (
+        <section className="border border-black flex flex-col gap-4 p-4 rounded-lg text-xl font-normal">
+            <h1 className="font-bold text-3xl">Lounge Page</h1>
+            <p>Admins and Editors can hang out here.</p>
+            <div className="flexGrow">
+                <Link className="underline" to="/">Home</Link>
+            </div>
+        </section>
+    )
+}

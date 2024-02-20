@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Loader } from "./Loader"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import axios from 'axios'
 import { CONSTANTS } from "../../config/Constants";
 import { useSetRecoilState } from "recoil";
@@ -10,6 +10,9 @@ import { userAtom } from "../store/atom/user";
 export function Signin() {
 
     const navigate = useNavigate();
+    const location = useLocation()
+    const from = location.state?.from?.pathname || "/"
+
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [err, setErr] = useState("")
@@ -32,7 +35,7 @@ export function Signin() {
             setIsLoggedIn(true)
             setAccessToken(accessToken)
             setUser(user)
-            navigate('/')
+            navigate(from, { replace: true })
 
         } catch (e: any) {
             setIsLoggedIn(false)

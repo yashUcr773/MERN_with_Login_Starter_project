@@ -5,7 +5,7 @@ import { Correct } from "../assets/Correct";
 import { Incorrect } from "../assets/Incorrect";
 import { Loader } from "./Loader";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { customAxios } from "../../config/Constants";
 import { useSetRecoilState } from "recoil";
 import { accessTokenAtom, isLoggedInAtom } from "../store/atom/authAtom";
 import { userAtom } from "../store/atom/user";
@@ -57,7 +57,7 @@ export function Signup() {
         }
         setShowLoader(true)
         try {
-            const response = await axios.post(CONSTANTS.APIBASEURL + '/auth/register', { username, password })
+            const response = await customAxios.post(CONSTANTS.APIBASEURL + '/auth/register', { username, password }, { withCredentials: true })
 
             const { accessToken, ...user } = response.data.user
             setIsLoggedIn(true)

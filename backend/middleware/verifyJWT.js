@@ -7,7 +7,7 @@ const verifyJWT = async (req, res, next) => {
             req.headers.authorization || req.headers.Authorization;
 
         if (!authHeader?.startsWith("Bearer ")) {
-            return res.status(401).json({
+            return res.status(403).json({
                 success: false,
                 message: "Authentication Error",
             });

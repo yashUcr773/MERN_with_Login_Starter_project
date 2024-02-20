@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Loader } from "./Loader"
 import { useLocation, useNavigate } from "react-router-dom"
-import axios from 'axios'
+import { customAxios } from '../../config/Constants'
 import { CONSTANTS } from "../../config/Constants";
 import { useSetRecoilState } from "recoil";
 import { accessTokenAtom, isLoggedInAtom } from "../store/atom/authAtom";
@@ -30,7 +30,7 @@ export function Signin() {
         e.preventDefault()
         setShowLoader(true)
         try {
-            const response = await axios.post(CONSTANTS.APIBASEURL + '/auth/login', { username, password })
+            const response = await customAxios.post(CONSTANTS.APIBASEURL + '/auth/login', { username, password }, { withCredentials: true })
             const { accessToken, ...user } = response.data.user
             setIsLoggedIn(true)
             setAccessToken(accessToken)

@@ -6,9 +6,15 @@ const PORT = 3000;
 const cookieParser = require("cookie-parser");
 const connectDB = require("./database/databaseConnection");
 const mongoose = require("mongoose");
+const {
+    credentials,
+} = require("./middleware/access-control-credentials.middleware");
 
 // connect to mongodb
 connectDB();
+
+// set allow credentials to true to send cookie
+app.use(credentials);
 
 // Cross Origin Resource Sharing
 app.use(cors(corsOptions));

@@ -225,7 +225,7 @@ const handleRefreshToken = async (req, res) => {
 
         // if token not in cookie, return
         if (!cookies?.jwt) {
-            return res.status(401).json({
+            return res.status(403).json({
                 success: false,
                 message: "Authorization Error",
             });

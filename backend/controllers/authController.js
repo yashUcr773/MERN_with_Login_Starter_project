@@ -7,6 +7,7 @@ const {
     USER_SIGNUP_VALIDATOR,
     USER_SIGNIN_VALIDATOR,
 } = require("../validations/user.validations");
+const { convertRolesToArray } = require("../config/roles");
 
 /**
 Takes in username and password from request.
@@ -24,6 +25,7 @@ const handleLogin = async (req, res) => {
         });
 
         if (!success) {
+            res.cookie("jwt", "", tokenCookieOptions);
             return res.status(400).json({
                 message: "Username and password are required.",
                 success: false,
@@ -34,6 +36,8 @@ const handleLogin = async (req, res) => {
         // check if user exists in db
         const foundUser = await UsersDB.findOne({ username });
         if (!foundUser) {
+            res.cookie("jwt", "", tokenCookieOptions);
+
             return res.status(401).json({
                 success: false,
                 message: "Username or password incorrect",
@@ -43,7 +47,9 @@ const handleLogin = async (req, res) => {
         // evaluate password
         const match = await bcrypt.compare(password, foundUser.password);
         if (!match) {
-            res.status(401).json({
+            res.cookie("jwt", "", tokenCookieOptions);
+
+            return res.status(401).json({
                 success: false,
                 message: "Username or password incorrect",
             });
@@ -57,18 +63,18 @@ const handleLogin = async (req, res) => {
 
         const updatedUser = await UsersDB.findByIdAndUpdate(foundUser._id, {
             refreshToken,
-        });
+        },{new:true});
 
         // send cookie and response
         res.cookie("jwt", refreshToken, tokenCookieOptions);
-        res.json({
+        return res.json({
             success: true,
             message: "Login Successful",
             user: {
                 userId: updatedUser._id,
                 username: username,
                 accessToken: accessToken,
-                roles: updatedUser.roles,
+                roles: convertRolesToArray(updatedUser.roles),
             },
         });
     } catch (e) {
@@ -91,7 +97,7 @@ const handleLogout = async (req, res) => {
 
         // if cookie does not exists, return
         if (!cookies?.jwt) {
-            return res.status(204).json({
+            return res.status(200).json({
                 success: true,
                 message: "Log out successful",
             });
@@ -111,7 +117,7 @@ const handleLogout = async (req, res) => {
         // if user does not exist, delete cookie and return
         if (!foundUser) {
             res.clearCookie("jwt", tokenCookieOptions);
-            return res.status(204).json({
+            return res.status(200).json({
                 success: true,
                 message: "Log out successful",
             });
@@ -120,12 +126,12 @@ const handleLogout = async (req, res) => {
         // update db to have refresh token as empty
         await UsersDB.findByIdAndUpdate(foundUser._id, {
             refreshToken: "",
-        });
+        },{new:true});
 
         // delete cookie and return
         res.clearCookie("jwt", tokenCookieOptions);
         return res
-            .status(204)
+            .status(200)
             .json({ success: true, message: "Log out successful" });
     } catch (e) {
         console.log(e);
@@ -187,7 +193,7 @@ const handleSignup = async (req, res) => {
         // add refresh token in DB
         const updatedUser = await UsersDB.findByIdAndUpdate(newUser.id, {
             refreshToken: refreshToken,
-        });
+        },{new:true});
 
         // send cookie and response
         res.cookie("jwt", refreshToken, tokenCookieOptions);
@@ -198,7 +204,7 @@ const handleSignup = async (req, res) => {
                 userId: updatedUser._id,
                 username: updatedUser.username,
                 accessToken: accessToken,
-                roles: updatedUser.roles,
+                roles: convertRolesToArray(updatedUser.roles),
             },
         });
     } catch (err) {
@@ -268,12 +274,13 @@ Generate accessToken and refreshToken
 return [accessToken, refreshToken]
 */
 function _generateTokens(userId, username, userRoles) {
+    const roles = convertRolesToArray(userRoles);
     const accessToken = jwt.sign(
         {
             userInfo: {
                 username,
                 userId,
-                userRoles: Object.values(userRoles),
+                userRoles: roles,
             },
         },
         process.env.ACCESS_TOKEN_SECRET,
@@ -285,7 +292,7 @@ function _generateTokens(userId, username, userRoles) {
             userInfo: {
                 username,
                 userId,
-                userRoles: Object.values(userRoles),
+                userRoles: roles,
             },
         },
         process.env.REFRESH_TOKEN_SECRET,

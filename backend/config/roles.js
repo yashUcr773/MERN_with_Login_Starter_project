@@ -23,9 +23,17 @@ function getRolesConfig(...roles) {
     );
 }
 
-console.log((getRolesConfig(rolesEnum.USER))[rolesEnum.USER])
+function getCodeForRole(role) {
+    return _userRoles[role][role];
+}
+
+function convertRolesToArray(userRoles) {
+    return Object.values(userRoles).filter((value) => value);
+}
 
 module.exports = {
     rolesEnum,
     getRolesConfig,
+    convertRolesToArray,
+    getCodeForRole,
 };

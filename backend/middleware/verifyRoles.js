@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { getCodeForRole } = require("../config/roles");
 require("dotenv").config();
 
 const verifyRoles = (...allowedRoles) => {
@@ -11,7 +12,9 @@ const verifyRoles = (...allowedRoles) => {
                 });
             }
 
-            const rolesArray = [...allowedRoles];
+            const rolesArray = [...allowedRoles].map((role) =>
+                getCodeForRole(role)
+            );
             const result = req.userInfo.userRoles
                 .map((role) => {
                     return rolesArray.includes(role);
@@ -30,9 +33,9 @@ const verifyRoles = (...allowedRoles) => {
             return next();
         } catch (e) {
             console.log(e);
-            return res.status(403).json({
+            return res.status(401).json({
                 success: false,
-                message: "Authorization Error",
+                message: "Unauthorized Access",
             });
         }
     };

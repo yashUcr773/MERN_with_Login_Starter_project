@@ -1,6 +1,6 @@
 const zod = require("zod");
 
-const passwordSchema = z
+const passwordSchema = zod
     .string()
     .min(8)
     .max(24)

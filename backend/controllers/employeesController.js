@@ -102,9 +102,15 @@ const updateEmployee = async (req, res) => {
         if (lastname) {
             newEmployee.lastname = lastname;
         }
-        const updatedEmployee = await EmployeesDB.findByIdAndUpdate(id, {
-            newEmployee,
-        });
+        const updatedEmployee = await EmployeesDB.findByIdAndUpdate(
+            id,
+            { ...newEmployee },
+            { new: true }
+        );
+
+        console.log(updatedEmployee);
+        console.log(newEmployee);
+
         return res.status(200).json({
             success: true,
             message: "employee updated",
@@ -158,7 +164,7 @@ const deleteEmployee = async (req, res) => {
  */
 const getEmployee = async (req, res) => {
     try {
-        const { id } = req.body;
+        const id = req.params.id;
         const employee = await EmployeesDB.findOne({ _id: id });
         if (!employee) {
             return res.status(400).json({
@@ -176,7 +182,10 @@ const getEmployee = async (req, res) => {
             },
         });
     } catch (e) {
-        return res.status(500).json({ success: false, message: e.message });
+        console.log(e);
+        return res
+            .status(500)
+            .json({ success: false, message: "Internal Server Error" });
     }
 };
 

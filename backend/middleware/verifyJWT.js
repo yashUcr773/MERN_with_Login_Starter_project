@@ -3,8 +3,12 @@ require("dotenv").config();
 
 const verifyJWT = async (req, res, next) => {
     try {
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) return res.sendStatus(401);
+        const authHeader =
+            req.headers.authorization || req.headers.Authorization;
+        if (!authHeader?.startsWith("Bearer "))
+            return res
+                .status(401)
+                .json({ success: false, message: "Authorization Error" });
 
         const token = authHeader.split(" ")[1];
 
@@ -17,7 +21,9 @@ const verifyJWT = async (req, res, next) => {
         return next();
     } catch (e) {
         console.log(e);
-        return res.sendStatus(403);
+        return res
+            .status(403)
+            .json({ success: false, message: "Authorization Error" });
     }
 };
 

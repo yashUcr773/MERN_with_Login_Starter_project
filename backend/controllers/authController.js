@@ -1,7 +1,5 @@
 const UsersDB = require("../database/user.database");
 const bcrypt = require("bcrypt");
-const { rolesEnum, getRolesConfig } = require("../config/roles");
-
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { tokenCookieOptions } = require("../config/cookieOptions");
@@ -27,7 +25,11 @@ const handleLogin = async (req, res) => {
     const match = await bcrypt.compare(pwd, foundUser.password);
 
     if (match) {
-        const [accessToken, refreshToken] = _generateTokens(foundUser.username);
+        const [accessToken, refreshToken] = _generateTokens(
+            foundUser._id,
+            foundUser.username,
+            foundUser.roles
+        );
         foundUser.refreshToken = refreshToken;
 
         const updatedUser = await UsersDB.findByIdAndUpdate(foundUser._id, {
@@ -126,14 +128,23 @@ const handleSignup = async (req, res) => {
         //encrypt the password
         const hashedPwd = await bcrypt.hash(pwd, 10);
 
-        // generateTokens
-        const [accessToken, refreshToken] = _generateTokens(user);
-
         //store the new user
         const newUser = await UsersDB.create({
             username: user,
             password: hashedPwd,
-            refreshToken,
+            refreshToken: "",
+        });
+
+        // generate tokens
+        const [accessToken, refreshToken] = _generateTokens(
+            newUser._id,
+            newUser.username,
+            newUser.roles
+        );
+
+        // add refresh token in DB
+        const updatedUser = await UsersDB.findByIdAndUpdate(newUser.id, {
+            refreshToken: refreshToken,
         });
 
         // send cookie and response
@@ -142,10 +153,10 @@ const handleSignup = async (req, res) => {
             success: true,
             message: "User Created Successfully",
             user: {
-                userId: newUser._id,
-                username: username,
+                userId: updatedUser._id,
+                username: updatedUser.username,
                 accessToken: accessToken,
-                roles: newUser.roles,
+                roles: updatedUser.roles,
             },
         });
     } catch (err) {
@@ -187,7 +198,11 @@ const handleRefreshToken = async (req, res) => {
         );
 
         // generate new tokens
-        const [newAccessToken, newRefreshToken] = _generateTokens(username);
+        const [newAccessToken, newRefreshToken] = _generateTokens(
+            foundUser.username._id,
+            foundUser.username,
+            foundUser.roles
+        );
 
         return res.status(200).json({
             success: true,
@@ -202,15 +217,27 @@ const handleRefreshToken = async (req, res) => {
     }
 };
 
-function _generateTokens(username) {
+function _generateTokens(userId, username, userRoles) {
     const accessToken = jwt.sign(
-        { username: username },
+        {
+            userInfo: {
+                username,
+                userId,
+                userRoles: Object.values(userRoles),
+            },
+        },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
     );
 
     const refreshToken = jwt.sign(
-        { username: username },
+        {
+            userInfo: {
+                username,
+                userId,
+                userRoles: Object.values(userRoles),
+            },
+        },
         process.env.REFRESH_TOKEN_SECRET,
         { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
     );

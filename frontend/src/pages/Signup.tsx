@@ -12,13 +12,13 @@ import { userAtom } from "../store/atom/user";
 
 export function Signup() {
 
-    const [username, setUsername] = useState("Yash")
+    const [username, setUsername] = useState("")
     const [validName, setValidName] = useState(false)
 
-    const [password, setPassword] = useState("aA1!1111")
+    const [password, setPassword] = useState("")
     const [validPassword, setValidPassword] = useState(false)
 
-    const [confirmPWD, setConfirmPWD] = useState("aA1!1111")
+    const [confirmPWD, setConfirmPWD] = useState("")
     const [validconfirmPWD, setValidconfirmPWD] = useState(false)
 
     const [err, setErr] = useState("")
@@ -57,11 +57,13 @@ export function Signup() {
         }
         setShowLoader(true)
         try {
-            const response = await axios.post(CONSTANTS.APIBASEURL + '/auth/register', { user: username, pwd: password })
-            console.log(response)
+            const response = await axios.post(CONSTANTS.APIBASEURL + '/auth/register', { username, password })
+
+            const { accessToken, ...user } = response.data.user
             setIsLoggedIn(true)
-            // setAccessToken(resp)
-            // setUser(null)
+            setAccessToken(accessToken)
+            setUser(user)
+
         } catch (e: any) {
             setIsLoggedIn(false)
             setAccessToken(null)

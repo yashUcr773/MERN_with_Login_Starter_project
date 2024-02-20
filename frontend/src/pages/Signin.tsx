@@ -3,26 +3,40 @@ import { Loader } from "./Loader"
 import { useNavigate } from "react-router-dom"
 import axios from 'axios'
 import { CONSTANTS } from "../../config/Constants";
+import { useSetRecoilState } from "recoil";
+import { accessTokenAtom, isLoggedInAtom } from "../store/atom/authAtom";
+import { userAtom } from "../store/atom/user";
 
 export function Signin() {
 
     const navigate = useNavigate();
-    const [user, setUser] = useState("")
+    const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [err, setErr] = useState("")
     const [showLoader, setShowLoader] = useState(false)
 
+    const setIsLoggedIn = useSetRecoilState(isLoggedInAtom)
+    const setAccessToken = useSetRecoilState(accessTokenAtom)
+    const setUser = useSetRecoilState(userAtom)
+
     useEffect(() => {
         setErr("")
-    }, [user, password])
+    }, [username, password])
 
     async function handleSubmit(e: any) {
         e.preventDefault()
         setShowLoader(true)
         try {
-            const response = await axios.post(CONSTANTS.APIBASEURL + '/auth/login', { user: user, pwd: password })
-            console.log(response)
+            const response = await axios.post(CONSTANTS.APIBASEURL + '/auth/login', { username, password })
+            const { accessToken, ...user } = response.data.user
+            setIsLoggedIn(true)
+            setAccessToken(accessToken)
+            setUser(user)
+
         } catch (e: any) {
+            setIsLoggedIn(false)
+            setAccessToken(null)
+            setUser(null)
             setErr(e.response.data.message)
             console.log(e)
         }
@@ -50,8 +64,8 @@ export function Signin() {
                             type="text"
                             id="username"
                             autoComplete="off"
-                            onChange={(e) => setUser(e.target.value)}
-                            value={user}
+                            onChange={(e) => setUsername(e.target.value)}
+                            value={username}
                             required
                             placeholder="Enter Name"
                         ></input>

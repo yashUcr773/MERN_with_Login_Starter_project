@@ -1,4 +1,5 @@
 export interface defaultUserInterface {
     username: string,
-    roles: string[]
+    roles: number[],
+    userId: string
 }

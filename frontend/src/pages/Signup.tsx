@@ -63,7 +63,7 @@ export function Signup() {
             setIsLoggedIn(true)
             setAccessToken(accessToken)
             setUser(user)
-            navigate('/dashboard')
+            navigate('/')
 
         } catch (e: any) {
             setIsLoggedIn(false)

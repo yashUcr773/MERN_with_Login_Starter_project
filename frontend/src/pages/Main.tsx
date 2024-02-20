@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { Signin } from "./Signin";
 import { Signup } from "./Signup";
 import { Layout } from "./Layout";
@@ -9,6 +9,7 @@ import { Editor } from "./Editor";
 import { Admin } from "./Admin";
 import { Lounge } from "./Lounge";
 import { Missing } from "./Missing";
+import { RequireAuth } from "./RequireAuth";
 
 export function Main() {
     return (
@@ -22,10 +23,12 @@ export function Main() {
                 <Route path='unauthorized' element={<Unauthorized />}></Route>
 
                 {/* Protected */}
-                <Route path='/' element={<Home />}></Route>
-                <Route path='editor' element={<Editor />}></Route>
-                <Route path='admin' element={<Admin />}></Route>
-                <Route path='lounge' element={<Lounge />}></Route>
+                <Route element={<RequireAuth />}>
+                    <Route path='/' element={<Home />}></Route>
+                    <Route path='editor' element={<Editor />}></Route>
+                    <Route path='admin' element={<Admin />}></Route>
+                    <Route path='lounge' element={<Lounge />}></Route>
+                </Route>
 
                 {/* Catch All */}
                 <Route path='*' element={<Missing />}></Route>

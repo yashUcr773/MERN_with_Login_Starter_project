@@ -1,6 +1,6 @@
 import { useSetRecoilState } from "recoil";
 import { customAxios } from "../../config/Constants";
-import { accessTokenAtom } from "../store/atom/authAtom";
+import { accessTokenAtom } from "../store/atoms/authAtom";
 
 
 export function useRefreshToken() {

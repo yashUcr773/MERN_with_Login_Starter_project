@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useRecoilValue } from "recoil";
-import { isLoggedInAtom } from "../store/atom/authAtom";
-import { userAtom } from "../store/atom/user";
+import { isLoggedInAtom } from "../store/atoms/authAtom";
+import { userAtom } from "../store/atoms/user";
 
 export function RequireAuth({ allowedRoles }: any) {
     const location = useLocation()

@@ -9,7 +9,7 @@ import { Editor } from "./Editor";
 import { Admin } from "./Admin";
 import { Lounge } from "./Lounge";
 import { Missing } from "./Missing";
-import { RequireAuth } from "./RequireAuth";
+import { RequireAuth } from "../components/RequireAuth";
 import { ROLES } from '../../config/roles'
 
 export function Main() {

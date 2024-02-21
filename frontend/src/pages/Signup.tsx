@@ -3,12 +3,12 @@ import { Info } from "../assets/Info";
 import { CONSTANTS } from "../../config/Constants"
 import { Correct } from "../assets/Correct";
 import { Incorrect } from "../assets/Incorrect";
-import { Loader } from "./Loader";
+import { Loader } from "../components/Loader";
 import { useNavigate } from "react-router-dom";
 import { customAxios } from "../../config/Constants";
 import { useSetRecoilState } from "recoil";
-import { accessTokenAtom, isLoggedInAtom } from "../store/atom/authAtom";
-import { userAtom } from "../store/atom/user";
+import { accessTokenAtom, isLoggedInAtom } from "../store/atoms/authAtom";
+import { userAtom } from "../store/atoms/user";
 
 export function Signup() {
 

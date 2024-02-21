@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { customAxiosPrivate } from "../../config/Constants";
 import { useRefreshToken } from "./useRefreshToken";
 import { useRecoilValue } from "recoil";
-import { accessTokenAtom } from "../store/atom/authAtom";
+import { accessTokenAtom } from "../store/atoms/authAtom";
 
 export function useAxiosPrivate() {
     const refresh = useRefreshToken()
@@ -11,6 +11,7 @@ export function useAxiosPrivate() {
 
     useEffect(() => {
 
+        // attach access token to each request
         const requestIntercept = customAxiosPrivate.interceptors.request.use(
             config => {
                 if (!config.headers['Authorization']) {
@@ -20,7 +21,8 @@ export function useAxiosPrivate() {
             }, (error) => Promise.reject(error)
         )
 
-
+        // send refresh token to get new access token in case of token expiry.
+        // then resend the request.
         const responseIntercept = customAxiosPrivate.interceptors.response.use(
             response => response,
             async (error) => {
@@ -38,7 +40,7 @@ export function useAxiosPrivate() {
             customAxiosPrivate.interceptors.response.eject(requestIntercept)
             customAxiosPrivate.interceptors.response.eject(responseIntercept)
         }
-    }, [])
+    }, [accessToken, refresh])
 
 
     return customAxiosPrivate

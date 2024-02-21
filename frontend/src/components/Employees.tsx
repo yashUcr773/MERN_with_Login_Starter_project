@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export function Employees() {
     const [employees, setEmployees] = useState([])
     const customAxiosPrivate = useAxiosPrivate()
+    const navigate = useNavigate()
+    const location = useLocation()
 
     useEffect(() => {
         let isMounted = true
@@ -17,6 +20,7 @@ export function Employees() {
                 isMounted && setEmployees(response.data.employees)
             } catch (e) {
                 console.log(e)
+                navigate('/login', { state: { from: location }, replace: true })
             }
         }
 

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
-import { Loader } from "./Loader"
+import { Loader } from "../components/Loader"
 import { useLocation, useNavigate } from "react-router-dom"
 import { customAxios } from '../../config/Constants'
 import { CONSTANTS } from "../../config/Constants";
 import { useSetRecoilState } from "recoil";
-import { accessTokenAtom, isLoggedInAtom } from "../store/atom/authAtom";
-import { userAtom } from "../store/atom/user";
+import { accessTokenAtom, isLoggedInAtom } from "../store/atoms/authAtom";
+import { userAtom } from "../store/atoms/user";
 
 export function Signin() {
 

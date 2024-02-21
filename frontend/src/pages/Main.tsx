@@ -12,6 +12,7 @@ import { Missing } from "./Missing";
 import { RequireAuth } from "../components/RequireAuth";
 import { ROLES } from '../../config/roles'
 import { PersistentLogin } from "../components/PersistentLogin";
+import { IsLoggedIn } from "../components/IsLoggedIn";
 
 export function Main() {
     return (
@@ -19,8 +20,10 @@ export function Main() {
             <Route path="/" element={<Layout />}>
 
                 {/* public routes */}
-                <Route path='signin' element={<Signin />}></Route>
-                <Route path='signup' element={<Signup />}></Route>
+                <Route element={<IsLoggedIn />}>
+                    <Route path='signin' element={<Signin />}></Route>
+                    <Route path='signup' element={<Signup />}></Route>
+                </Route>
                 <Route path='linkpage' element={<LinkPage />}></Route>
                 <Route path='unauthorized' element={<Unauthorized />}></Route>
 

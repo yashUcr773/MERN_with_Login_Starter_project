@@ -1,11 +1,11 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom"
+import { useLogout } from "../hooks/useLogout"
 
 export function Home() {
+    const logout = useLogout()
+    async function handleLogout() {
+        await logout({})
 
-    const navigate = useNavigate();
-
-    const logout = async () => {
-        navigate('/linkpage');
     }
 
     return <section className="border border-black flex flex-col gap-4 p-4 rounded-lg text-xl font-normal">
@@ -15,6 +15,6 @@ export function Home() {
         <Link to="/admin" className="underline">Go to admin only page</Link>
         <Link to="/lounge" className="underline">Go to lounge page</Link>
         <Link to="/linkpage" className="underline">Go to links page</Link>
-        <button onClick={() => logout()} className="border border-black bg-black text-white text-lg font-semibold p-2 px-4 rounded-md">Sign out</button>
+        <button onClick={() => handleLogout()} className="border border-black bg-black text-white text-lg font-semibold p-2 px-4 rounded-md">Sign out</button>
     </section>
 }

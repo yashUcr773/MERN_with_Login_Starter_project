@@ -1,26 +1,32 @@
 import { useNavigate } from "react-router-dom"
+import { useRecoilValue } from "recoil"
+import { accessTokenAtom } from "../store/atoms/authAtom"
+import { useLogout } from "../hooks/useLogout"
 
 export function Header() {
 
     const navigate = useNavigate()
+    const accessToken = useRecoilValue(accessTokenAtom)
+    const logout = useLogout()
 
-    function handleSigninClick() {
-        navigate('/signin')
-    }
-
-    function handleSignupClick() {
-        navigate('/signup')
-    }
-
-    function handleLogoClick() {
-        navigate('/linkpage')
+    async function handleLogout() {
+        await logout({})
     }
 
     return <header className="bg-gray-200 border border-black h-24 flex flex-row items-center justify-between p-8">
-        <span onClick={handleLogoClick} className="text-xl font-semibold cursor-pointer">Logo</span>
+        <span onClick={() => navigate('/linkpage')} className="text-xl font-semibold cursor-pointer">Logo</span>
         <nav className="flex flex-row gap-4">
-            <button onClick={() => handleSigninClick()} className="border border-black p-2 px-4 rounded-lg">Signin</button>
-            <button onClick={() => handleSignupClick()} className="bg-black text-white p-2 px-4 rounded-lg">Signup</button>
+            {
+                !accessToken ?
+                    <>
+                        <button onClick={() => navigate('/signin')} className="border border-black p-2 px-4 rounded-lg">Signin</button>
+                        <button onClick={() => navigate('/signup')} className="bg-black text-white p-2 px-4 rounded-lg">Signup</button>
+                    </> :
+                    <>
+                        <button onClick={() => navigate('/linkpage')} className="bg-black text-white p-2 px-4 rounded-lg">Links</button>
+                        <button onClick={() => handleLogout()} className="bg-black text-white p-2 px-4 rounded-lg">Logout</button>
+                    </>
+            }
         </nav>
     </header>
 }

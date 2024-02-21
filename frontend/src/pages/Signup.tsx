@@ -6,9 +6,8 @@ import { Incorrect } from "../assets/Incorrect";
 import { Loader } from "../components/Loader";
 import { useNavigate } from "react-router-dom";
 import { customAxios } from "../../config/Constants";
-import { useSetRecoilState } from "recoil";
-import { accessTokenAtom, isLoggedInAtom } from "../store/atoms/authAtom";
-import { userAtom } from "../store/atoms/user";
+import { useSetCurrentSession } from "../hooks/useSetCurrentSession";
+import { defaultUser } from "../../config/defaults";
 
 export function Signup() {
 
@@ -25,10 +24,7 @@ export function Signup() {
     const [showLoader, setShowLoader] = useState(false)
 
     const navigate = useNavigate()
-
-    const setIsLoggedIn = useSetRecoilState(isLoggedInAtom)
-    const setAccessToken = useSetRecoilState(accessTokenAtom)
-    const setUser = useSetRecoilState(userAtom)
+    const setCurrentSession = useSetCurrentSession()
 
     useEffect(() => {
         setErr("")
@@ -60,15 +56,11 @@ export function Signup() {
             const response = await customAxios.post(CONSTANTS.APIBASEURL + '/auth/register', { username, password }, { withCredentials: true })
 
             const { accessToken, ...user } = response.data.user
-            setIsLoggedIn(true)
-            setAccessToken(accessToken)
-            setUser(user)
+            setCurrentSession({ accessToken, userData: user })
             navigate('/')
 
         } catch (e: any) {
-            setIsLoggedIn(false)
-            setAccessToken(null)
-            setUser(null)
+            setCurrentSession({ accessToken: "", userData: defaultUser })
 
             setErr(e.response.data.message)
             console.log(e)

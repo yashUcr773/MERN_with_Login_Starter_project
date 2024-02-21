@@ -24,7 +24,7 @@ const verifyJWT = async (req, res, next) => {
 
         return next();
     } catch (e) {
-        console.log(e);
+        console.log(e.message);
         return res.status(403).json({
             success: false,
             message: "Authentication Error",

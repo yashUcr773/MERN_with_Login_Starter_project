@@ -61,9 +61,13 @@ const handleLogin = async (req, res) => {
         );
         foundUser.refreshToken = refreshToken;
 
-        const updatedUser = await UsersDB.findByIdAndUpdate(foundUser._id, {
-            refreshToken,
-        },{new:true});
+        const updatedUser = await UsersDB.findByIdAndUpdate(
+            foundUser._id,
+            {
+                refreshToken,
+            },
+            { new: true }
+        );
 
         // send cookie and response
         res.cookie("jwt", refreshToken, tokenCookieOptions);
@@ -124,9 +128,13 @@ const handleLogout = async (req, res) => {
         }
 
         // update db to have refresh token as empty
-        await UsersDB.findByIdAndUpdate(foundUser._id, {
-            refreshToken: "",
-        },{new:true});
+        await UsersDB.findByIdAndUpdate(
+            foundUser._id,
+            {
+                refreshToken: "",
+            },
+            { new: true }
+        );
 
         // delete cookie and return
         res.clearCookie("jwt", tokenCookieOptions);
@@ -191,9 +199,13 @@ const handleSignup = async (req, res) => {
         );
 
         // add refresh token in DB
-        const updatedUser = await UsersDB.findByIdAndUpdate(newUser.id, {
-            refreshToken: refreshToken,
-        },{new:true});
+        const updatedUser = await UsersDB.findByIdAndUpdate(
+            newUser.id,
+            {
+                refreshToken: refreshToken,
+            },
+            { new: true }
+        );
 
         // send cookie and response
         res.cookie("jwt", refreshToken, tokenCookieOptions);
@@ -222,6 +234,7 @@ const handleRefreshToken = async (req, res) => {
     try {
         // get input
         const cookies = req.cookies;
+        const sendUserData = req.query.sendUserData;
 
         // if token not in cookie, return
         if (!cookies?.jwt) {
@@ -259,6 +272,11 @@ const handleRefreshToken = async (req, res) => {
             success: true,
             message: "Token Refreshed",
             newAccessToken,
+            user: sendUserData && {
+                userId: foundUser._id,
+                username: foundUser.username,
+                roles: convertRolesToArray(foundUser.roles),
+            },
         });
     } catch (e) {
         return res.status(403).json({

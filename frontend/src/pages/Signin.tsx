@@ -3,9 +3,8 @@ import { Loader } from "../components/Loader"
 import { useLocation, useNavigate } from "react-router-dom"
 import { customAxios } from '../../config/Constants'
 import { CONSTANTS } from "../../config/Constants";
-import { useSetRecoilState } from "recoil";
-import { accessTokenAtom, isLoggedInAtom } from "../store/atoms/authAtom";
-import { userAtom } from "../store/atoms/user";
+import { useSetCurrentSession } from "../hooks/useSetCurrentSession";
+import { defaultUser } from '../../config/defaults'
 
 export function Signin() {
 
@@ -17,10 +16,7 @@ export function Signin() {
     const [password, setPassword] = useState("")
     const [err, setErr] = useState("")
     const [showLoader, setShowLoader] = useState(false)
-
-    const setIsLoggedIn = useSetRecoilState(isLoggedInAtom)
-    const setAccessToken = useSetRecoilState(accessTokenAtom)
-    const setUser = useSetRecoilState(userAtom)
+    const setCurrentSession = useSetCurrentSession()
 
     useEffect(() => {
         setErr("")
@@ -32,15 +28,13 @@ export function Signin() {
         try {
             const response = await customAxios.post(CONSTANTS.APIBASEURL + '/auth/login', { username, password }, { withCredentials: true })
             const { accessToken, ...user } = response.data.user
-            setIsLoggedIn(true)
-            setAccessToken(accessToken)
-            setUser(user)
+            setCurrentSession({ accessToken, userData: user })
+
             navigate(from, { replace: true })
 
         } catch (e: any) {
-            setIsLoggedIn(false)
-            setAccessToken(null)
-            setUser(null)
+            setCurrentSession({ accessToken: "", userData: defaultUser })
+
             setErr(e.response.data.message)
             console.log(e)
         }

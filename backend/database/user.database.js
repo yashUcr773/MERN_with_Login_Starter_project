@@ -1,12 +1,27 @@
 const mongoose = require("mongoose");
-const { rolesEnum, getRolesConfig } = require("../config/roles");
-const Schema = mongoose.Schema;
+const { rolesEnum, getRolesConfig } = require("../config/roles.config");
 
-const usersSchema = new Schema(
+const userSchema = new mongoose.Schema(
     {
-        username: {
+        email: {
             type: String,
             required: true,
+            unique: true,
+            trim: true,
+        },
+        password: {
+            type: String,
+            required: true,
+        },
+        firstname: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        lastname: {
+            type: String,
+            required: true,
+            trim: true,
         },
         roles: {
             [rolesEnum.USER]: {
@@ -16,13 +31,9 @@ const usersSchema = new Schema(
             [rolesEnum.EDITOR]: Number,
             [rolesEnum.ADMIN]: Number,
         },
-        password: {
-            type: String,
-            required: true,
-        },
         refreshToken: String,
     },
     { timestamps: true }
 );
 
-module.exports = mongoose.model("User", usersSchema);
+module.exports = mongoose.model("Users", userSchema);

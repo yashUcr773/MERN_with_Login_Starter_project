@@ -1,6 +1,4 @@
-const jwt = require("jsonwebtoken");
-const { getCodeForRole } = require("../config/roles");
-require("dotenv").config();
+const { getCodeForRole } = require("../config/roles.config");
 
 const verifyRoles = (...allowedRoles) => {
     return async function (req, res, next) {

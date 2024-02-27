@@ -1,8 +1,8 @@
-const EmployeesDB = require("../database/employee.database");
+const EMPLOYEES_DB = require("../database/employee.database");
 const {
     EMPLOYEE_CREATE_VALIDATOR,
     EMPLOYEE_UPDATE_VALIDATOR,
-} = require("../validations/employee.validations");
+} = require("../validation/employee.validation");
 
 /**
  * Get all employees
@@ -11,8 +11,8 @@ const {
  */
 const getAllEmployees = async (req, res) => {
     try {
-        let employees = await EmployeesDB.find({});
-        res.status(200).json({
+        let employees = await EMPLOYEES_DB.find({});
+        return res.status(200).json({
             success: true,
             employees,
             message: "Employees Found",
@@ -43,14 +43,14 @@ const createNewEmployee = async (req, res) => {
             });
         }
 
-        const newEmployee = await EmployeesDB.create({
+        const newEmployee = await EMPLOYEES_DB.create({
             firstname,
             lastname,
             lastUpdatedBy: req.userInfo.userId,
             createdBy: req.userInfo.userId,
         });
 
-        res.status(201).json({
+        return res.status(201).json({
             success: true,
             message: "Employee Added",
             employee: newEmployee,
@@ -68,7 +68,7 @@ const createNewEmployee = async (req, res) => {
 const updateEmployee = async (req, res) => {
     try {
         const { id, firstname, lastname } = req.body;
-        const employee = await EmployeesDB.findOne({ _id: id });
+        const employee = await EMPLOYEES_DB.findOne({ _id: id });
 
         const { success, error } = EMPLOYEE_UPDATE_VALIDATOR.safeParse({
             firstname,
@@ -98,7 +98,7 @@ const updateEmployee = async (req, res) => {
             newEmployee.lastname = lastname;
         }
         newEmployee.lastUpdatedBy = req.userInfo.userId;
-        const updatedEmployee = await EmployeesDB.findByIdAndUpdate(
+        const updatedEmployee = await EMPLOYEES_DB.findByIdAndUpdate(
             id,
             { ...newEmployee },
             { new: true }
@@ -122,7 +122,7 @@ const updateEmployee = async (req, res) => {
 const deleteEmployee = async (req, res) => {
     try {
         const { id } = req.body;
-        const employee = await EmployeesDB.findOne({ _id: id });
+        const employee = await EMPLOYEES_DB.findOne({ _id: id });
 
         if (!employee) {
             return res.status(400).json({
@@ -131,7 +131,7 @@ const deleteEmployee = async (req, res) => {
             });
         }
 
-        const deletedEmployee = await EmployeesDB.findByIdAndDelete(id);
+        const deletedEmployee = await EMPLOYEES_DB.findByIdAndDelete(id);
         return res.status(200).json({
             success: true,
             message: "employee deleted",
@@ -150,7 +150,7 @@ const deleteEmployee = async (req, res) => {
 const getEmployee = async (req, res) => {
     try {
         const id = req.params.id;
-        const employee = await EmployeesDB.findOne({ _id: id });
+        const employee = await EMPLOYEES_DB.findOne({ _id: id });
         if (!employee) {
             return res.status(400).json({
                 success: false,
@@ -170,10 +170,34 @@ const getEmployee = async (req, res) => {
     }
 };
 
+const getEmployeeByFilter = async (req, res) => {
+    try {
+        const mask = req.query.mask || "";
+        const regexFilter = new RegExp(mask, "i");
+        const employees = await EMPLOYEES_DB.find({
+            $or: [
+                { firstname: { $regex: regexFilter } },
+                { lastname: { $regex: regexFilter } },
+            ],
+        });
+        return res.status(200).json({
+            success: true,
+            message: "Employees Found",
+            employees,
+        });
+    } catch (e) {
+        console.log(e);
+        return res
+            .status(500)
+            .json({ success: false, message: "Internal Server Error" });
+    }
+};
+
 module.exports = {
     getAllEmployees,
     createNewEmployee,
     updateEmployee,
     deleteEmployee,
     getEmployee,
+    getEmployeeByFilter,
 };

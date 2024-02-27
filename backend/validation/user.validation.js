@@ -1,5 +1,4 @@
 const zod = require("zod");
-
 const passwordSchema = zod
     .string()
     .min(8)
@@ -20,17 +19,27 @@ const passwordSchema = zod
         }
     );
 
+// define schemas
 const USER_SIGNUP_VALIDATOR = zod.object({
-    username: zod.string().min(4).max(24),
+    firstname: zod.string().min(2),
+    lastname: zod.string().min(2),
+    email: zod.string().email().min(2),
     password: passwordSchema,
 });
 
 const USER_SIGNIN_VALIDATOR = zod.object({
-    username: zod.string(),
+    email: zod.string().email(),
     password: zod.string(),
 });
 
+const USER_UPDATE_VALIDATOR = zod.object({
+    password: passwordSchema.optional().or(zod.literal("")),
+    firstName: zod.string().min(2).optional().or(zod.literal("")),
+    lastName: zod.string().min(2).optional().or(zod.literal("")),
+});
+
 module.exports = {
-    USER_SIGNUP_VALIDATOR,
+    USER_UPDATE_VALIDATOR,
     USER_SIGNIN_VALIDATOR,
+    USER_SIGNUP_VALIDATOR,
 };

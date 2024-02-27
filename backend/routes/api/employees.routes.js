@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const employeesController = require("../../controllers/employeesController");
-const { verifyJWT } = require("../../middleware/verifyJWT");
-const { rolesEnum } = require("../../config/roles");
-const { verifyRoles } = require("../../middleware/verifyRoles");
+const employeesController = require("../../controller/employees.controller");
+const { verifyJWT } = require("../../middleware/verifyJWT.middleware");
+const { rolesEnum } = require("../../config/roles.config");
+const { verifyRoles } = require("../../middleware/verifyRoles.middleware");
 
 router.use(verifyJWT);
 router
@@ -18,6 +18,12 @@ router
         employeesController.updateEmployee
     )
     .delete(verifyRoles(rolesEnum.ADMIN), employeesController.deleteEmployee);
+
+router.get(
+    "/filter",
+    verifyRoles(rolesEnum.ADMIN, rolesEnum.EDITOR, rolesEnum.USER),
+    employeesController.getEmployeeByFilter
+);
 
 router
     .route("/:id")

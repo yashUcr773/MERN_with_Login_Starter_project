@@ -1,13 +1,13 @@
-const UsersDB = require("../database/user.database");
+const USERS_DB = require("../database/user.database");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
-const { tokenCookieOptions } = require("../config/cookieOptions");
+const { tokenCookieOptions } = require("../config/cookieOptions.config");
 const {
     USER_SIGNUP_VALIDATOR,
     USER_SIGNIN_VALIDATOR,
-} = require("../validations/user.validations");
-const { convertRolesToArray } = require("../config/roles");
+} = require("../validation/user.validation");
+const { convertRolesToArray } = require("../config/roles.config");
+const { CONSTANTS } = require("../config/constants.config");
 
 /**
 Takes in username and password from request.
@@ -18,29 +18,30 @@ Returns found user object and accesstoken
 const handleLogin = async (req, res) => {
     try {
         // check if inputs are valid
-        const { username, password } = req.body;
+        const { email, password } = req.body;
         const { success, error } = USER_SIGNIN_VALIDATOR.safeParse({
-            username,
+            email,
             password,
         });
 
         if (!success) {
             res.cookie("jwt", "", tokenCookieOptions);
             return res.status(400).json({
-                message: "Username and password are required.",
+                message: "Email and password are required.",
                 success: false,
                 error: error.issues,
             });
         }
 
         // check if user exists in db
-        const foundUser = await UsersDB.findOne({ username });
+        const foundUser = await USERS_DB.findOne({
+            email: { $regex: new RegExp(email, "i") },
+        });
         if (!foundUser) {
             res.cookie("jwt", "", tokenCookieOptions);
-
             return res.status(401).json({
                 success: false,
-                message: "Username or password incorrect",
+                message: "Email or password incorrect.",
             });
         }
 
@@ -48,20 +49,20 @@ const handleLogin = async (req, res) => {
         const match = await bcrypt.compare(password, foundUser.password);
         if (!match) {
             res.cookie("jwt", "", tokenCookieOptions);
-
             return res.status(401).json({
                 success: false,
-                message: "Username or password incorrect",
+                message: "Email or password incorrect.",
             });
         }
-        const [accessToken, refreshToken] = _generateTokens(
-            foundUser._id,
-            foundUser.username,
-            foundUser.roles
-        );
+
+        const [accessToken, refreshToken] = _generateTokens({
+            userId: foundUser._id,
+            email: foundUser.username,
+            userRoles: foundUser.roles,
+        });
         foundUser.refreshToken = refreshToken;
 
-        const updatedUser = await UsersDB.findByIdAndUpdate(
+        const updatedUser = await USERS_DB.findByIdAndUpdate(
             foundUser._id,
             {
                 refreshToken,
@@ -76,16 +77,20 @@ const handleLogin = async (req, res) => {
             message: "Login Successful",
             user: {
                 userId: updatedUser._id,
-                username: username,
+                email: updatedUser.email,
+                firstname: updatedUser.firstname,
+                lastname: updatedUser.lastname,
                 accessToken: accessToken,
                 roles: convertRolesToArray(updatedUser.roles),
             },
         });
     } catch (e) {
         console.log(e);
-        return res
-            .status(500)
-            .json({ success: false, message: "Server Error" });
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+            error: e.message,
+        });
     }
 };
 
@@ -103,7 +108,7 @@ const handleLogout = async (req, res) => {
         if (!cookies?.jwt) {
             return res.status(200).json({
                 success: true,
-                message: "Log out successful",
+                message: "Log out successful.",
             });
         }
 
@@ -111,7 +116,7 @@ const handleLogout = async (req, res) => {
         const refreshToken = cookies["jwt"];
 
         // find user from db with same refresh token
-        const foundUser = await UsersDB.findOne(
+        const foundUser = await USERS_DB.findOne(
             {
                 refreshToken: refreshToken,
             },
@@ -123,12 +128,12 @@ const handleLogout = async (req, res) => {
             res.clearCookie("jwt", tokenCookieOptions);
             return res.status(200).json({
                 success: true,
-                message: "Log out successful",
+                message: "Log out successful.",
             });
         }
 
         // update db to have refresh token as empty
-        await UsersDB.findByIdAndUpdate(
+        await USERS_DB.findByIdAndUpdate(
             foundUser._id,
             {
                 refreshToken: "",
@@ -143,9 +148,11 @@ const handleLogout = async (req, res) => {
             .json({ success: true, message: "Log out successful" });
     } catch (e) {
         console.log(e);
-        return res
-            .status(403)
-            .json({ success: false, message: "Authorization Error" });
+        return res.status(403).json({
+            success: false,
+            message: "Authorization Error",
+            error: e.message,
+        });
     }
 };
 
@@ -159,47 +166,54 @@ TODO: Update to make only 1 db call to create user and set refresh token
 const handleSignup = async (req, res) => {
     try {
         // check if inputs are valid
-        const { username, password } = req.body;
+        const { firstname, lastname, email, password } = req.body;
         const { success, error } = USER_SIGNUP_VALIDATOR.safeParse({
-            username,
+            firstname,
+            lastname,
+            email,
             password,
         });
 
         if (!success) {
             return res.status(400).json({
-                message: "Username and password are required.",
+                message: "All Fields are required.",
                 success: false,
                 error: error.issues,
             });
         }
 
-        // check for duplicate usernames in the db
-        const duplicate = await UsersDB.findOne({ username: username });
+        // check for duplicate emails in the db
+        const duplicate = await USERS_DB.findOne({
+            email: { $regex: new RegExp(email, "i") },
+        });
+
         if (duplicate) {
             return res
                 .status(409)
-                .json({ success: false, message: "Username exists" }); //Conflict
+                .json({ success: false, message: "Email Exists" }); //Conflict
         }
 
         //encrypt the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
         //store the new user
-        const newUser = await UsersDB.create({
-            username: username,
+        const newUser = await USERS_DB.create({
+            firstname,
+            lastname,
+            email,
             password: hashedPassword,
             refreshToken: "",
         });
 
         // generate tokens
-        const [accessToken, refreshToken] = _generateTokens(
-            newUser._id,
-            newUser.username,
-            newUser.roles
-        );
+        const [accessToken, refreshToken] = _generateTokens({
+            userId: newUser._id,
+            email: newUser.email,
+            userRoles: newUser.roles,
+        });
 
         // add refresh token in DB
-        const updatedUser = await UsersDB.findByIdAndUpdate(
+        const updatedUser = await USERS_DB.findByIdAndUpdate(
             newUser.id,
             {
                 refreshToken: refreshToken,
@@ -209,18 +223,21 @@ const handleSignup = async (req, res) => {
 
         // send cookie and response
         res.cookie("jwt", refreshToken, tokenCookieOptions);
-        res.status(201).json({
+        return res.status(201).json({
             success: true,
-            message: "User Created Successfully",
+            message: "User Created Successfully.",
             user: {
                 userId: updatedUser._id,
-                username: updatedUser.username,
+                email: updatedUser.email,
+                firstname: updatedUser.firstname,
+                lastname: updatedUser.lastname,
                 accessToken: accessToken,
                 roles: convertRolesToArray(updatedUser.roles),
             },
         });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({ success: false, message: e.message });
     }
 };
 
@@ -248,7 +265,7 @@ const handleRefreshToken = async (req, res) => {
         const refreshToken = cookies["jwt"];
 
         // find user in DB
-        const foundUser = await UsersDB.findOne({ refreshToken });
+        const foundUser = await USERS_DB.findOne({ refreshToken });
 
         // If user not found
         if (!foundUser) {
@@ -259,14 +276,14 @@ const handleRefreshToken = async (req, res) => {
         }
 
         // verify if token is correct
-        await jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        await jwt.verify(refreshToken, CONSTANTS.REFRESH_TOKEN_SECRET);
 
         // generate new tokens
-        const [newAccessToken, newRefreshToken] = _generateTokens(
-            foundUser._id,
-            foundUser.username,
-            foundUser.roles
-        );
+        const [newAccessToken, newRefreshToken] = _generateTokens({
+            userId: foundUser._id,
+            email: foundUser.email,
+            userRoles: foundUser.roles,
+        });
 
         return res.status(200).json({
             success: true,
@@ -274,14 +291,18 @@ const handleRefreshToken = async (req, res) => {
             newAccessToken,
             user: sendUserData && {
                 userId: foundUser._id,
-                username: foundUser.username,
+                firstname: foundUser.firstname,
+                lastname: foundUser.lastname,
+                email: foundUser.email,
                 roles: convertRolesToArray(foundUser.roles),
             },
         });
     } catch (e) {
+        console.log(e);
         return res.status(403).json({
             success: false,
             message: "Authorization Error",
+            error: e.message,
         });
     }
 };
@@ -291,30 +312,30 @@ Takes in userId and username and userRoles.
 Generate accessToken and refreshToken
 return [accessToken, refreshToken]
 */
-function _generateTokens(userId, username, userRoles) {
+function _generateTokens({ userId, email, userRoles }) {
     const roles = convertRolesToArray(userRoles);
     const accessToken = jwt.sign(
         {
             userInfo: {
-                username,
+                email,
                 userId,
                 userRoles: roles,
             },
         },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+        CONSTANTS.ACCESS_TOKEN_SECRET,
+        { expiresIn: CONSTANTS.ACCESS_TOKEN_EXPIRY }
     );
 
     const refreshToken = jwt.sign(
         {
             userInfo: {
-                username,
+                email,
                 userId,
                 userRoles: roles,
             },
         },
-        process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
+        CONSTANTS.REFRESH_TOKEN_SECRET,
+        { expiresIn: CONSTANTS.REFRESH_TOKEN_EXPIRY }
     );
 
     return [accessToken, refreshToken];

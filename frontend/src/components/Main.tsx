@@ -3,16 +3,15 @@ import { Signin } from "./Signin";
 import { Signup } from "./Signup";
 import { Layout } from "./Layout";
 import { LinkPage } from "./LinkPage";
-import { Unauthorized } from "./Unauthorized";
-import { Home } from "./Home";
+import { Dashboard } from "./Dashboard";
 import { Editor } from "./Editor";
 import { Admin } from "./Admin";
 import { Lounge } from "./Lounge";
-import { Missing } from "./Missing";
-import { RequireAuth } from "../components/RequireAuth";
+import { NotFound } from "./NotFound";
+import { RequireAuth } from "./RequireAuth";
 import { ROLES } from '../../config/roles'
-import { PersistentLogin } from "../components/PersistentLogin";
-import { IsLoggedIn } from "../components/IsLoggedIn";
+import { PersistentLogin } from "./PersistentLogin";
+import { IsLoggedInComponent } from "./IsLoggedInComponent";
 
 export function Main() {
     return (
@@ -20,18 +19,19 @@ export function Main() {
             <Route path="/" element={<Layout />}>
 
                 {/* public routes */}
-                <Route element={<IsLoggedIn />}>
+                <Route element={<IsLoggedInComponent />}>
                     <Route path='signin' element={<Signin />}></Route>
                     <Route path='signup' element={<Signup />}></Route>
                 </Route>
                 <Route path='linkpage' element={<LinkPage />}></Route>
-                <Route path='unauthorized' element={<Unauthorized />}></Route>
+                <Route path='unauthorized' element={<NotFound />}></Route>
 
                 {/* Protected */}
                 {/* Accessible to all */}
                 <Route element={<PersistentLogin />}>
                     <Route element={<RequireAuth allowedRoles={[ROLES.USER, ROLES.ADMIN, ROLES.EDITOR]} />} >
-                        <Route path='/' element={<Home />}></Route>
+                        <Route path='/' element={<Dashboard />}></Route>
+                        <Route path='/dashboard' element={<Dashboard />}></Route>
                     </Route>
 
                     {/* Accessible to editor only */}
@@ -50,7 +50,7 @@ export function Main() {
                     </Route>
 
                     {/* Catch All */}
-                    <Route path='*' element={<Missing />}></Route>
+                    <Route path='*' element={<NotFound />}></Route>
                 </Route>
 
             </Route>

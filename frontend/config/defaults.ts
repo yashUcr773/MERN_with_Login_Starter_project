@@ -5,3 +5,5 @@ export const defaultUser: defaultUserInterface = {
     roles: [],
     userId: ""
 }
+
+export const defaultLogoutToLink: string = '/';

@@ -1,13 +1,16 @@
 import { useSetRecoilState } from "recoil";
-import { customAxios } from "../../config/Constants";
+import { CONSTANTS, customAxios } from "../../config/Constants";
 import { accessTokenAtom } from "../store/atoms/authAtom";
 import { useSetCurrentSession } from "./useSetCurrentSession";
 
+interface refreshtoken {
+    sendUserData: boolean
+}
 
-export function useRefreshToken({ sendUserData }: any) {
+export function useRefreshToken({ sendUserData }: refreshtoken) {
 
 
-    let baseurl = '/auth/refresh'
+    let baseurl = CONSTANTS.AUTH.GET_REFRESH()
     if (sendUserData) {
         baseurl += '?sendUserData=true'
     }
@@ -20,7 +23,7 @@ export function useRefreshToken({ sendUserData }: any) {
         if (sendUserData) {
             setCurrentSession({ accessToken: response.data.newAccessToken, userData: response.data.user })
         } else {
-            setCurrentSession({ accessToken: response.data.newAccessToken })
+            setCurrentSession({ accessToken: response.data.newAccessToken, userData: null })
         }
         setAccessToken(response.data.newAccessToken)
         return response.data.newAccessToken

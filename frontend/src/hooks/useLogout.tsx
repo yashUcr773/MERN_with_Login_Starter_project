@@ -1,29 +1,26 @@
-import { customAxios } from "../../config/Constants";
-import { useSetCurrentSession } from "../hooks/useSetCurrentSession";
-import { defaultUser } from "../../config/defaults";
+import { CONSTANTS, customAxios } from "../../config/Constants";
+import { logoutInterface } from "../../config/types";
+import { useSetCurrentSession } from "./useSetCurrentSession";
 import { useNavigate } from "react-router-dom";
-
-interface useLogoutProps {
-    toLink?: string
-}
+import { defaultLogoutToLink } from '../../config/defaults'
 
 export function useLogout() {
 
     const navigate = useNavigate();
     const setSession = useSetCurrentSession()
 
-    async function logout({ toLink }: useLogoutProps) {
+    async function logout({ toLink }: logoutInterface) {
         try {
-            const response = await customAxios('/auth/logout', { withCredentials: true })
-            console.log(response)
+            await customAxios(CONSTANTS.AUTH.GET_LOGOUT(), { withCredentials: true })
+
         } catch (e) {
             console.log(e)
         } finally {
-            setSession({ accessToken: "", userData: defaultUser })
+            setSession({ accessToken: null, userData: null })
             if (toLink) {
                 navigate(toLink)
             } else {
-                navigate('/linkpage')
+                navigate(defaultLogoutToLink)
             }
         }
     }

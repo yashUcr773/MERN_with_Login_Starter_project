@@ -5,7 +5,7 @@ import { useRecoilValue } from "recoil";
 import { accessTokenAtom } from "../store/atoms/authAtom";
 
 export function useAxiosPrivate() {
-    const refresh = useRefreshToken({sendUserData:false})
+    const refresh = useRefreshToken({ sendUserData: false })
     const accessToken = useRecoilValue(accessTokenAtom)
 
 
@@ -33,7 +33,7 @@ export function useAxiosPrivate() {
                     prevRequest.headers['Authorization'] = `Bearer ${newAccessToken}`
                     return customAxiosPrivate(prevRequest)
                 }
-                Promise.reject(error)
+                return Promise.reject(error)
             }
         )
         return () => {

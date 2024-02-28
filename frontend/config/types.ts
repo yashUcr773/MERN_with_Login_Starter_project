@@ -3,3 +3,7 @@ export interface defaultUserInterface {
     roles: number[],
     userId: string
 }
+
+export interface logoutInterface {
+    toLink?: string
+}

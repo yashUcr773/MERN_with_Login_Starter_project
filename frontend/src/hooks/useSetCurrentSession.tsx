@@ -1,11 +1,11 @@
 import { useSetRecoilState } from "recoil";
-import { defaultUserInterface } from "../../config/types";
 import { accessTokenAtom } from "../store/atoms/authAtom";
 import { userAtom } from "../store/atoms/user";
+import { defaultUserInterface } from "../../config/types";
 
 interface currentSessionProps {
-    accessToken?: string,
-    userData?: defaultUserInterface
+    accessToken: string | null,
+    userData: defaultUserInterface | null
 }
 
 export function useSetCurrentSession() {
@@ -14,12 +14,14 @@ export function useSetCurrentSession() {
     const setAccessToken = useSetRecoilState(accessTokenAtom)
 
     function setCurrentSession({ accessToken, userData }: currentSessionProps) {
-        if (accessToken != undefined && accessToken != null) {
+
+        if (accessToken !== undefined) {
             setAccessToken(accessToken)
         }
-        if (userData != undefined && userData != null) {
+        if (userData !== undefined) {
             setUser(userData)
         }
+
     }
     return setCurrentSession
 

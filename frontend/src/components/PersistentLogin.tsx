@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useRefreshToken } from "../hooks/useRefreshToken";
 import { useRecoilValue } from "recoil";
+import { Outlet } from "react-router-dom";
+import { useRefreshToken } from "../hooks/useRefreshToken";
 import { accessTokenAtom } from "../store/atoms/authAtom";
 import { Loader } from "./Loader";
-import { Outlet } from "react-router-dom";
 
 export function PersistentLogin() {
     const [isLoading, setIsLoading] = useState(true)
@@ -20,7 +20,14 @@ export function PersistentLogin() {
                 setIsLoading(false)
             }
         }
-        !accessToken ? verifyRefreshToken() : setIsLoading(false)
+
+        const persistence = localStorage.getItem('persistence')
+
+        if (persistence && persistence == 'true') {
+            !accessToken ? verifyRefreshToken() : setIsLoading(false)
+        } else {
+            setIsLoading(false)
+        }
     }, [])
 
     return isLoading ? <Loader fullPage={true} /> : <Outlet />

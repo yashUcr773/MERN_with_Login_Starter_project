@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate";
 import { useLocation, useNavigate } from "react-router-dom";
+import { CONSTANTS } from "../../config/Constants";
 
 export function Employees() {
     const [employees, setEmployees] = useState([])
@@ -9,15 +10,11 @@ export function Employees() {
     const location = useLocation()
 
     useEffect(() => {
-        let isMounted = true
-        const controller = new AbortController()
 
         const getEmployees = async () => {
             try {
-                const response = await customAxiosPrivate.get('/employees', {
-                    signal: controller.signal
-                });
-                isMounted && setEmployees(response.data.employees)
+                const response = await customAxiosPrivate(CONSTANTS.EMPLOYEES.GET_ALL_EMPLOYEES());
+                setEmployees(response.data.employees)
             } catch (e) {
                 console.log(e)
                 navigate('/login', { state: { from: location }, replace: true })
@@ -25,11 +22,6 @@ export function Employees() {
         }
 
         getEmployees();
-
-        return () => {
-            isMounted = false
-            controller.abort()
-        }
 
     }, [])
 
